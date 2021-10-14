@@ -26,7 +26,7 @@ However, if the channel is closed, there's no way to send a message again.
 First, we need to create a `Relay`:
 
 ```go
-relay, err := broadcast.NewRelay() // Create a new relay
+relay := broadcast.NewRelay() // Create a new relay
 ```
 
 Once a `Relay` is created, we can create a new listener using the `Listen` method. As the `broadcast` library relies internally on channels, it accepts a capacity:

@@ -13,10 +13,10 @@ type Relay struct {
 }
 
 // NewRelay is the factory to create a Relay.
-func NewRelay() (*Relay, error) {
+func NewRelay() *Relay {
 	return &Relay{
 		clients: make(map[uint32]*Listener),
-	}, nil
+	}
 }
 
 // Notify sends a notification to all the listeners.

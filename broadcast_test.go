@@ -4,13 +4,10 @@ import (
 	"broadcast"
 	"sync"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestNotify(t *testing.T) {
-	relay, err := broadcast.NewRelay()
-	require.NoError(t, err)
+	relay := broadcast.NewRelay()
 	list1 := relay.Listener(0)
 	list2 := relay.Listener(0)
 	wg := sync.WaitGroup{}
@@ -46,8 +43,7 @@ func TestNotify(t *testing.T) {
 }
 
 func TestBroadcast(t *testing.T) {
-	relay, err := broadcast.NewRelay()
-	require.NoError(t, err)
+	relay := broadcast.NewRelay()
 	relay.Listener(0)
 
 	relay.Broadcast()
@@ -55,8 +51,7 @@ func TestBroadcast(t *testing.T) {
 }
 
 func TestRace(t *testing.T) {
-	relay, err := broadcast.NewRelay()
-	require.NoError(t, err)
+	relay := broadcast.NewRelay()
 	wg := sync.WaitGroup{}
 
 	funcs := []func(){
@@ -84,7 +79,7 @@ func TestRace(t *testing.T) {
 		}
 	}
 
-	relay.Notify()
+	relay.Broadcast()
 	wg.Wait()
 	relay.Close()
 }
