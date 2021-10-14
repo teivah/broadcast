@@ -23,6 +23,8 @@ However, if the channel is closed, there's no way to send a message again.
 
 ## How?
 
+### Step by Step
+
 First, we need to create a `Relay`:
 
 ```go
@@ -64,4 +66,35 @@ Last but not least, we can close a `Relay` using `Close`:
 
 ```go
 relay.Close() // Close a relay
+```
+
+### Example
+
+```go
+relay := broadcast.NewRelay() // Create a relay
+defer relay.Close()
+
+list1 := relay.Listener(1) // Create a listener with one capacity
+defer list1.Close()
+list2 := relay.Listener(1) // Create a listener with one capacity
+defer list2.Close()
+
+// Listener goroutines
+f := func(i int, list *broadcast.Listener) {
+	for range list.Ch() { // Waits for receiving notifications
+		fmt.Printf("listener %d has received a notification\n", i)
+	}
+}
+go f(1, list1)
+go f(2, list2)
+
+// Notifier goroutine
+for i := 0; i < 5; i++ {
+	time.Sleep(time.Second)
+	relay.Notify() // Send notifications with guaranteed delivery
+}
+for i := 0; i < 5; i++ {
+	time.Sleep(time.Second)
+	relay.Broadcast() // Send notifications without guaranteed delivery
+}
 ```
