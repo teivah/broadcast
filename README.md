@@ -3,7 +3,7 @@
 ![CI](https://github.com/teivah/broadcast/actions/workflows/ci.yml/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/teivah/broadcast)](https://goreportcard.com/report/github.com/teivah/broadcast)
 
-A broadcasting library
+A broadcasting library for Go.
 
 ## What?
 
