@@ -7,17 +7,17 @@ A broadcasting library for Go.
 
 ## What?
 
-`broadcast` is a library that allows sending repeated notifications to multiple goroutines with possible guaranteed delivery.
+`broadcast` is a library that allows sending repeated notifications to multiple goroutines with guaranteed delivery.
 
 ## Why?
 
-### Why Not Using Channels?
+### What about Channels?
 
 Sending a message to a channel is received by a single goroutine. The only operation that is broadcasted to multiple goroutines is a channel closure.
 
 However, if the channel is closed, there's no way to send a message again.
 
-### Why Not Using sync.Cond?
+### What about sync.Cond?
 
 `sync.Cond` is the standard solution based on condition variables to set up containers of goroutines waiting for a specific condition. There's one caveat to keep in mind, though: the `Broadcast()` method doesn't guarantee that a goroutine will receive the notification. Indeed, the notification will be lost if the listener goroutine isn't waiting on the `Wait()` method.
 
@@ -52,10 +52,16 @@ On the `Listener` side, we can access the internal channel using `Ch`:
 <-list.Ch() // Wait on a notification
 ```
 
-Last but not least, we can close a `Listener` using `Close`:
+We can close a `Listener` using `Close`:
 
 ```go
-list.Close()
+list.Close() // Close a listener
 ```
 
 Please note that this operation is purposely not thread-safe. It can be called multiple times by the same goroutine but shouldn't be called in parallel by multiple goroutines as it can lead to a panic (trying to close the same channel multiple times).
+
+Last but not least, we can close a `Relay` using `Close`:
+
+```go
+relay.Close() // Close a relay
+```

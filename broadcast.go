@@ -59,10 +59,22 @@ func (r *Relay) Listener(capacity int) *Listener {
 	return listener
 }
 
-func (r *Relay) close(n uint32) {
+func (r *Relay) Close() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	delete(r.clients, n)
+
+	for _, client := range r.clients {
+		close(client.ch)
+	}
+	r.clients = nil
+}
+
+func (r *Relay) close(l *Listener) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	close(l.ch)
+	delete(r.clients, l.id)
 }
 
 // Listener is a Relay listener.
@@ -85,7 +97,6 @@ func (l *Listener) Close() {
 		return
 	}
 
-	l.broadcast.close(l.id)
-	close(l.ch)
+	l.broadcast.close(l)
 	l.closed = true
 }
