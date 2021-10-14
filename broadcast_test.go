@@ -41,6 +41,8 @@ func TestNotify(t *testing.T) {
 
 	list1.Close()
 	list2.Close()
+
+	relay.Close()
 }
 
 func TestBroadcast(t *testing.T) {
@@ -49,4 +51,36 @@ func TestBroadcast(t *testing.T) {
 	relay.Listener(0)
 
 	relay.Broadcast()
+	relay.Close()
+}
+
+func TestRace(t *testing.T) {
+	relay, err := broadcast.NewRelay()
+	require.NoError(t, err)
+	wg := sync.WaitGroup{}
+
+	funcs := []func(){
+		func() {
+			listener := relay.Listener(1)
+			<-listener.Ch()
+			listener.Close()
+		},
+		func() {
+			relay.Broadcast()
+		},
+	}
+
+	for i := 0; i < 1000; i++ {
+		for _, f := range funcs {
+			f := f
+			wg.Add(1)
+			go func() {
+				f()
+				wg.Done()
+			}()
+		}
+	}
+
+	relay.Notify()
+	wg.Wait()
 }

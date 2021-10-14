@@ -52,10 +52,16 @@ On the `Listener` side, we can access the internal channel using `Ch`:
 <-list.Ch() // Wait on a notification
 ```
 
-Last but not least, we can close a `Listener` using `Close`:
+We can close a `Listener` using `Close`:
 
 ```go
-list.Close() // Close the listener
+list.Close() // Close a listener
 ```
 
 Please note that this operation is purposely not thread-safe. It can be called multiple times by the same goroutine but shouldn't be called in parallel by multiple goroutines as it can lead to a panic (trying to close the same channel multiple times).
+
+Last but not least, we can close a `Relay` using `Close`:
+
+```go
+relay.Close() // Close a relay
+```
