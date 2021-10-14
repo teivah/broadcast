@@ -18,6 +18,7 @@ The standard way to handle notifications is via a `chan struct{}`. However, send
 The only operation that is broadcasted to multiple goroutines is a channel closure. Yet, if the channel is closed, there's no way to send a message again.
 
 ❌ Repeated notifications to multiple goroutines
+
 ✅ Guaranteed delivery
 
 ### Why not sync.Cond?
@@ -27,6 +28,7 @@ The only operation that is broadcasted to multiple goroutines is a channel closu
 There's one caveat to keep in mind, though: the `Broadcast()` method doesn't guarantee that a goroutine will receive the notification. Indeed, the notification will be lost if the listener goroutine isn't waiting on the `Wait()` method.
 
 ✅ Repeated notifications to multiple goroutines
+
 ❌ Guaranteed delivery
 
 ## How?
