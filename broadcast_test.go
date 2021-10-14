@@ -62,7 +62,10 @@ func TestRace(t *testing.T) {
 	funcs := []func(){
 		func() {
 			listener := relay.Listener(1)
-			<-listener.Ch()
+			select {
+			case <-listener.Ch():
+			default:
+			}
 			listener.Close()
 		},
 		func() {
@@ -83,4 +86,5 @@ func TestRace(t *testing.T) {
 
 	relay.Notify()
 	wg.Wait()
+	relay.Close()
 }
