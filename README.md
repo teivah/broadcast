@@ -11,13 +11,13 @@ A broadcasting library for Go.
 
 ## Why?
 
-### What about Channels?
+### Why not Channels?
 
 Sending a message to a channel is received by a single goroutine. The only operation that is broadcasted to multiple goroutines is a channel closure.
 
 However, if the channel is closed, there's no way to send a message again.
 
-### What about sync.Cond?
+### Why not sync.Cond?
 
 `sync.Cond` is the standard solution based on condition variables to set up containers of goroutines waiting for a specific condition. There's one caveat to keep in mind, though: the `Broadcast()` method doesn't guarantee that a goroutine will receive the notification. Indeed, the notification will be lost if the listener goroutine isn't waiting on the `Wait()` method.
 
