@@ -61,7 +61,7 @@ func TestNotifyCtx(t *testing.T) {
 	relay.NotifyCtx(ctx)
 }
 
-func TestRace(t *testing.T) {
+func TestRaceBroadcast(t *testing.T) {
 	relay := broadcast.NewRelay()
 	wg := sync.WaitGroup{}
 
@@ -93,4 +93,23 @@ func TestRace(t *testing.T) {
 	relay.Broadcast()
 	wg.Wait()
 	relay.Close()
+}
+
+func TestRaceClosure(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		relay := broadcast.NewRelay()
+		list := []*broadcast.Listener{
+			relay.Listener(0),
+			relay.Listener(0),
+			relay.Listener(0),
+		}
+		go func() {
+			relay.Close()
+		}()
+		go func() {
+			for _, l := range list {
+				l.Close()
+			}
+		}()
+	}
 }

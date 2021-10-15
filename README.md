@@ -38,7 +38,7 @@ There's one caveat to keep in mind, though: the `Broadcast()` method doesn't gua
 First, we need to create a `Relay`:
 
 ```go
-relay := broadcast.NewRelay() // Create a new relay
+relay := broadcast.NewRelay()
 ```
 
 Once a `Relay` is created, we can create a new listener using the `Listen` method. As the `broadcast` library relies internally on channels, it accepts a capacity:
@@ -58,19 +58,14 @@ On the `Listener` side, we can access the internal channel using `Ch`:
 <-list.Ch() // Wait on a notification
 ```
 
-We can close a `Listener` using `Close`:
+We can close a `Listener` and a `Relay` using `Close`:
 
 ```go
-list.Close() // Close a listener
+list.Close() 
+relay.Close()
 ```
 
-Please note that this operation is purposely not thread-safe. It can be called multiple times by the same goroutine but shouldn't be called in parallel by multiple goroutines as it can lead to a panic (trying to close the same channel multiple times).
-
-Last but not least, we can close a `Relay` using `Close`:
-
-```go
-relay.Close() // Close a relay
-```
+Closing a `Relay` and `Listener`s can be done concurrently in a safe manner.
 
 ### Example
 

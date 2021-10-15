@@ -65,9 +65,9 @@ func (r *Relay) Listener(capacity int) *Listener {
 	defer r.mu.Unlock()
 
 	listener := &Listener{
-		ch:        make(chan struct{}, capacity),
-		id:        r.n,
-		broadcast: r,
+		ch:    make(chan struct{}, capacity),
+		id:    r.n,
+		relay: r,
 	}
 	r.clients[r.n] = listener
 	r.n++
@@ -79,12 +79,19 @@ func (r *Relay) Close() {
 	defer r.mu.Unlock()
 
 	for _, client := range r.clients {
-		close(client.ch)
+		r.closeRelay(client)
 	}
 	r.clients = nil
 }
 
-func (r *Relay) close(l *Listener) {
+func (r *Relay) closeRelay(l *Listener) {
+	l.once.Do(func() {
+		close(l.ch)
+		delete(r.clients, l.id)
+	})
+}
+
+func (r *Relay) closeListener(l *Listener) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -94,10 +101,10 @@ func (r *Relay) close(l *Listener) {
 
 // Listener is a Relay listener.
 type Listener struct {
-	ch        chan struct{}
-	id        uint32
-	broadcast *Relay
-	closed    bool
+	ch    chan struct{}
+	id    uint32
+	relay *Relay
+	once  sync.Once
 }
 
 // Ch returns the Listener channel.
@@ -106,12 +113,9 @@ func (l *Listener) Ch() <-chan struct{} {
 }
 
 // Close closes a listener.
-// This operation isn't thread safe.
+// This operation can be safely called in the meantime as Relay.Close()
 func (l *Listener) Close() {
-	if l.closed {
-		return
-	}
-
-	l.broadcast.close(l)
-	l.closed = true
+	l.once.Do(func() {
+		l.relay.closeListener(l)
+	})
 }
