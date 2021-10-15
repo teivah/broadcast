@@ -2,6 +2,7 @@
 package broadcast
 
 import (
+	"context"
 	"sync"
 )
 
@@ -27,6 +28,20 @@ func (r *Relay) Notify() {
 
 	for _, client := range r.clients {
 		client.ch <- struct{}{}
+	}
+}
+
+// NotifyCtx tries sending a notification to all the listeners until the context times out or is canceled.
+func (r *Relay) NotifyCtx(ctx context.Context) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for _, client := range r.clients {
+		select {
+		case client.ch <- struct{}{}:
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 

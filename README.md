@@ -47,16 +47,10 @@ Once a `Relay` is created, we can create a new listener using the `Listen` metho
 list := relay.Listener(1) // Create a new listener based on a channel with a one capacity
 ````
 
-A `Relay` can send a notification in two different manners:
-* Blocking: using the `Notify` method
-* Non-blocking: using the `Broadcast` method
-
-The main difference is that `Notify` guarantees that a listener will receive the notification. This method blocks until the notification have been sent to all the `Listener`. Conversely, `Broadcast` isn't blocking:
-
-```go
-relay.Notify() // Send a blocking notification (delivery is guaranteed)
-relay.Broadcast() // Send a non-blocking notification (delivery is not guaranteed)
-```
+A `Relay` can send a notification in three different manners:
+* `Notify()`: block until a notification is sent to all the listeners
+* `NotifyCtx(context.Context)`: send a notification to all the listeners unless the provided context times out or is canceled
+* `Broadcast()`: send a notification to all the listeners in a non-blocking manner; guaranteed delivery isn't guaranteed
 
 On the `Listener` side, we can access the internal channel using `Ch`:
 
@@ -91,20 +85,19 @@ defer list2.Close()
 
 // Listener goroutines
 f := func(i int, list *broadcast.Listener) {
-	for range list.Ch() { // Waits for receiving notifications
-		fmt.Printf("listener %d has received a notification\n", i)
-	}
+    for range list.Ch() { // Waits for receiving notifications
+        fmt.Printf("listener %d has received a notification\n", i)
+    }
 }
 go f(1, list1)
 go f(2, list2)
 
 // Notifier goroutine
 for i := 0; i < 5; i++ {
-	time.Sleep(time.Second)
-	relay.Notify() // Send notifications with guaranteed delivery
-}
-for i := 0; i < 5; i++ {
-	time.Sleep(time.Second)
-	relay.Broadcast() // Send notifications without guaranteed delivery
+time.Sleep(time.Second)
+    relay.Notify() // Send notifications with guaranteed delivery
+    ctx, _ := context.WithTimeout(context.Background(), time.Second)
+    relay.NotifyCtx(ctx) // Send notifications but cancel after 1 second
+    relay.Broadcast()    // Send notifications without guaranteed delivery
 }
 ```

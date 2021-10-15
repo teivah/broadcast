@@ -1,9 +1,11 @@
 package broadcast_test
 
 import (
-	"broadcast"
+	"context"
 	"sync"
 	"testing"
+
+	"github.com/teivah/broadcast"
 )
 
 func TestNotify(t *testing.T) {
@@ -48,6 +50,15 @@ func TestBroadcast(t *testing.T) {
 
 	relay.Broadcast()
 	relay.Close()
+}
+
+func TestNotifyCtx(t *testing.T) {
+	relay := broadcast.NewRelay()
+	relay.Listener(0)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	relay.NotifyCtx(ctx)
 }
 
 func TestRace(t *testing.T) {
