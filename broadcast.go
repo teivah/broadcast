@@ -74,6 +74,8 @@ func (r *Relay) Listener(capacity int) *Listener {
 	return listener
 }
 
+// Close closes a relay.
+// This operation can be safely called in the meantime as Listener.Close()
 func (r *Relay) Close() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
