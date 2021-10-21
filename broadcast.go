@@ -23,16 +23,11 @@ func NewRelay() *Relay {
 // Notify sends a notification to all the listeners.
 // It guarantees that all the listeners will receive the notification.
 func (r *Relay) Notify() {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	for _, client := range r.clients {
-		client.ch <- struct{}{}
-	}
+	_ = r.NotifyCtx(context.Background())
 }
 
 // NotifyCtx tries sending a notification to all the listeners until the context times out or is canceled.
-func (r *Relay) NotifyCtx(ctx context.Context) {
+func (r *Relay) NotifyCtx(ctx context.Context) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -40,9 +35,10 @@ func (r *Relay) NotifyCtx(ctx context.Context) {
 		select {
 		case client.ch <- struct{}{}:
 		case <-ctx.Done():
-			return
+			return ctx.Err()
 		}
 	}
+	return nil
 }
 
 // Broadcast broadcasts a notification to all the listeners.
@@ -81,23 +77,15 @@ func (r *Relay) Close() {
 	defer r.mu.Unlock()
 
 	for _, client := range r.clients {
-		r.closeRelay(client)
+		client.Close()
 	}
-	r.clients = nil
+	r.clients = make(map[uint32]*Listener)
 }
 
-func (r *Relay) closeRelay(l *Listener) {
-	l.once.Do(func() {
-		close(l.ch)
-		delete(r.clients, l.id)
-	})
-}
-
-func (r *Relay) closeListener(l *Listener) {
+func (r *Relay) removeListener(l *Listener) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	close(l.ch)
 	delete(r.clients, l.id)
 }
 
@@ -118,6 +106,7 @@ func (l *Listener) Ch() <-chan struct{} {
 // This operation can be safely called in the meantime as Relay.Close()
 func (l *Listener) Close() {
 	l.once.Do(func() {
-		l.relay.closeListener(l)
+		close(l.ch)
+		l.relay.removeListener(l)
 	})
 }
