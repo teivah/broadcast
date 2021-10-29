@@ -23,7 +23,7 @@ func NewRelay() *Relay {
 // Notify sends a notification to all the listeners.
 // It guarantees that all the listeners will receive the notification.
 func (r *Relay) Notify() {
-	_ = r.NotifyCtx(context.Background())
+	_ = r.NotifyCtx(context.Background()) //lint:ignore
 }
 
 // NotifyCtx tries sending a notification to all the listeners until the context times out or is canceled.
