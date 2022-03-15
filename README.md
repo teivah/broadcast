@@ -98,5 +98,4 @@ Closing a `Relay` and `Listener`s can be done concurrently in a safe manner.
 	time.Sleep(time.Second)                                // Allow time for previous messages to be processed
 	relay.Broadcast(msgC)                                  // Send notification without guaranteed delivery
 	time.Sleep(time.Second)                                // Allow time for previous messages to be processed
-	relay.Close()      
 ```
