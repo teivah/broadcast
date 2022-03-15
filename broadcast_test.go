@@ -44,51 +44,6 @@ func TestNotify(t *testing.T) {
 	relay.Close()
 }
 
-func TestNotify2(t *testing.T) {
-	type Msg string
-	const msgA Msg = "A"
-	const msgB Msg = "B"
-
-	relay := broadcast.NewRelay[Msg]()
-	list1 := relay.Listener(0)
-	list2 := relay.Listener(0)
-	wg := sync.WaitGroup{}
-
-	wg.Add(2)
-	go func() {
-		select {
-		case msg := <-list1.Ch():
-			if msg == msgA {
-				
-			}
-		}
-		wg.Done()
-	}()
-	go func() {
-		<-list2.Ch()
-		wg.Done()
-	}()
-	relay.Notify(msgA)
-	wg.Wait()
-
-	wg.Add(1)
-	go func() {
-		<-list2.Ch()
-		wg.Done()
-	}()
-	list1.Close()
-	relay.Notify(msgA)
-	wg.Wait()
-
-	list2.Close()
-	relay.Notify(msgB)
-
-	list1.Close()
-	list2.Close()
-
-	relay.Close()
-}
-
 func TestBroadcast(t *testing.T) {
 	relay := broadcast.NewRelay[struct{}]()
 	relay.Listener(0)
