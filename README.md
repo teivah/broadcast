@@ -70,32 +70,32 @@ Closing a `Relay` and `Listener`s can be done concurrently in a safe manner.
 ### Example
 
 ```go
-	type msg string
-	const (
-		msgA msg = "A"
-		msgB     = "B"
-		msgC     = "C"
-	)
+type msg string
+const (
+    msgA msg = "A"
+    msgB     = "B"
+    msgC     = "C"
+)
 
-	relay := broadcast.NewRelay[msg]() // Create a relay for msg values
-	defer relay.Close()
+relay := broadcast.NewRelay[msg]() // Create a relay for msg values
+defer relay.Close()
 
-	// Listener goroutines
-	for i := 0; i < 2; i++ {
-		go func(i int) {
-			l := relay.Listener(1)  // Create a listener with a buffer capacity of 1
-			for n := range l.Ch() { // Ranges over notifications
-				fmt.Printf("listener %d has received a notification: %v\n", i, n)
-			}
-		}(i)
-	}
+// Listener goroutines
+for i := 0; i < 2; i++ {
+    go func(i int) {
+        l := relay.Listener(1)  // Create a listener with a buffer capacity of 1
+        for n := range l.Ch() { // Ranges over notifications
+            fmt.Printf("listener %d has received a notification: %v\n", i, n)
+        }
+    }(i)
+}
 
-	// Notifiers
-	time.Sleep(time.Second)
-	relay.Notify(msgA)                                     // Send notification with guaranteed delivery
-	ctx, _ := context.WithTimeout(context.Background(), 0) // Context with immediate timeout
-	relay.NotifyCtx(ctx, msgB)                             // Send notification respecting context cancellation
-	time.Sleep(time.Second)                                // Allow time for previous messages to be processed
-	relay.Broadcast(msgC)                                  // Send notification without guaranteed delivery
-	time.Sleep(time.Second)                                // Allow time for previous messages to be processed
+// Notifiers
+time.Sleep(time.Second)
+relay.Notify(msgA)                                     // Send notification with guaranteed delivery
+ctx, _ := context.WithTimeout(context.Background(), 0) // Context with immediate timeout
+relay.NotifyCtx(ctx, msgB)                             // Send notification respecting context cancellation
+time.Sleep(time.Second)                                // Allow time for previous messages to be processed
+relay.Broadcast(msgC)                                  // Send notification without guaranteed delivery
+time.Sleep(time.Second)                                // Allow time for previous messages to be processed
 ```
